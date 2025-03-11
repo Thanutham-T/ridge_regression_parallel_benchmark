@@ -8,7 +8,7 @@ OPTFLAGS = -O3
 SOURCE = ./source
 
 # Output directory
-OUTDIR = ../out
+OUTDIR = ./out
 
 # Source files
 SRC_MT = $(SOURCE)/ridge_regression_MultiThread.cpp

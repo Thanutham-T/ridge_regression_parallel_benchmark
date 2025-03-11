@@ -88,7 +88,7 @@ void k_fold_cv_openMP(const MatrixXd &X, const VectorXd &y, double &best_alpha, 
 int main() {
     MatrixXd X;
     VectorXd y;
-    load_data("../data/CalCOFI_processed_data.csv", X, y);
+    load_data("./data/CalCOFI_processed_data.csv", X, y);
 
     if (X.rows() == 0 || y.size() == 0) {
         cout << "No data loaded, exiting." << endl;
