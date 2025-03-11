@@ -11,88 +11,70 @@ SOURCE = ./source
 OUTDIR = ./out
 
 # Source files
-SRC_NORM = $(SOURCE)/ridge_regression.cpp
 SRC_MT = $(SOURCE)/ridge_regression_MultiThread.cpp
 SRC_ASYNC = $(SOURCE)/ridge_regression_AsyncThread.cpp
 SRC_OPENMP = $(SOURCE)/ridge_regression_OpenMP.cpp
 SRC_MPI = $(SOURCE)/ridge_regression_MPI.cpp
+SRC_OMPI = $(SOURCE)/ridge_regression_OMPI.cpp
 
 # Output executables
-OUT_NORM = $(OUTDIR)/ridge_regression
 OUT_MT = $(OUTDIR)/ridge_regression_MultiThread
 OUT_ASYNC = $(OUTDIR)/ridge_regression_AsyncThread
 OUT_OPENMP = $(OUTDIR)/ridge_regression_OpenMP
 OUT_MPI = $(OUTDIR)/ridge_regression_MPI
+OUT_OMPI = $(OUTDIR)/ridge_regression_OMPI
 
 # Create output directory if it doesn't exist
 $(shell mkdir -p $(OUTDIR))
 
 # Normal compilation
-compile-all-normal: $(OUT_NORM) $(OUT_MT) $(OUT_ASYNC) $(OUT_OPENMP) $(OUT_MPI)
-
-$(OUT_NORM): $(SRC_NORM)
-	@mkdir -p $(OUTDIR)
-	$(CXX) $(CXXFLAGS) $< -o $@
+compile-all-normal: $(OUT_MT) $(OUT_ASYNC) $(OUT_OPENMP) $(OUT_MPI)
 
 $(OUT_MT): $(SRC_MT)
-	@mkdir -p $(OUTDIR)
 	$(CXX) $(CXXFLAGS) -pthread $< -o $@
 
 $(OUT_ASYNC): $(SRC_ASYNC)
-	@mkdir -p $(OUTDIR)
 	$(CXX) $(CXXFLAGS) -pthread $< -o $@
 
 $(OUT_OPENMP): $(SRC_OPENMP)
-	@mkdir -p $(OUTDIR)
 	$(CXX) $(CXXFLAGS) -fopenmp $< -o $@
 
 $(OUT_MPI): $(SRC_MPI)
-	@mkdir -p $(OUTDIR)
 	$(MPICXX) $(CXXFLAGS) $< -o $@
 
+$(OUT_OMPI): $(SRC_OMPI)
+	$(MPICXX) $(CXXFLAGS) -fopenmp $< -o $@
+
 # Optimized compilation (-O3)
-compile-all-optimize: $(OUT_NORM)_opt $(OUT_MT)_opt $(OUT_ASYNC)_opt $(OUT_OPENMP)_opt $(OUT_MPI)_opt
+compile-all-optimize: 
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -pthread $(SRC_MT) -o $(OUT_MT)
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -pthread $(SRC_ASYNC) -o $(OUT_ASYNC)
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -fopenmp $(SRC_OPENMP) -o $(OUT_OPENMP)
+	$(MPICXX) $(CXXFLAGS) $(OPTFLAGS) $(SRC_MPI) -o $(OUT_MPI)
+	$(MPICXX) $(CXXFLAGS) $(OPTFLAGS) -fopenmp $(SRC_OMPI) -o $(OUT_OMPI)
 
-$(OUT_NORM)_opt: $(SRC_NORM)
-	@mkdir -p $(OUTDIR)
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $< -o $(OUT_NORM)
+OMP_NUM_THREADS?=2
 
-$(OUT_MT)_opt: $(SRC_MT)
-	@mkdir -p $(OUTDIR)
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -pthread $< -o $(OUT_MT)
-
-$(OUT_ASYNC)_opt: $(SRC_ASYNC)
-	@mkdir -p $(OUTDIR)
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -pthread $< -o $(OUT_ASYNC)
-
-$(OUT_OPENMP)_opt: $(SRC_OPENMP)
-	@mkdir -p $(OUTDIR)
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -fopenmp $< -o $(OUT_OPENMP)
-
-$(OUT_MPI)_opt: $(SRC_MPI)
-	@mkdir -p $(OUTDIR)
-	$(MPICXX) $(CXXFLAGS) $(OPTFLAGS) $< -o $(OUT_MPI)
-
-# Run all executables
 run-all:
-	@echo "Running Sequential..."
-	@$(OUT_NORM)
-	@echo "\n"
-
 	@echo "Running MultiThread..."
-	@$(OUT_MT)
+	@$(OUTDIR)/ridge_regression_MultiThread
 	@echo "\n"
 
 	@echo "Running AsyncThread..."
-	@$(OUT_ASYNC)
+	@$(OUTDIR)/ridge_regression_AsyncThread
 	@echo "\n"
 
 	@echo "Running OpenMP..."
-	@$(OUT_OPENMP)
+	@$(OUTDIR)/ridge_regression_OpenMP
 	@echo "\n"
 
 	@echo "Running MPI..."
-	@mpirun -np 5 $(OUT_MPI)
+	@mpirun -np 5 $(OUTDIR)/ridge_regression_MPI
+	@echo "\n"
+
+	@echo "Running MPI & OpenMP..."
+	@export OMP_NUM_THREADS=$(OMP_NUM_THREADS)
+	@mpirun -np 3 $(OUTDIR)/ridge_regression_OMPI
 	@echo "\n"
 
 # Clean build files
