@@ -1,0 +1,1 @@
+This project is trying to use parallel technique for training ridge-regression and benchmark the execution time.
