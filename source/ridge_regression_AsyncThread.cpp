@@ -13,8 +13,6 @@ void k_fold_cv_multi_thread_async(const MatrixXd &X, const VectorXd &y, double &
     best_rmse = numeric_limits<double>::infinity();
     double alpha = 0.0, step_size = 0.01, prev_rmse = numeric_limits<double>::infinity();
 
-    auto overall_start = high_resolution_clock::now();
-
     while (true) {
         vector<future<double>> futures;
         for (int fold_idx = 0; fold_idx < k; ++fold_idx) {
@@ -87,9 +85,6 @@ void k_fold_cv_multi_thread_async(const MatrixXd &X, const VectorXd &y, double &
         prev_rmse = avg_rmse;
         alpha += step_size;
     }
-
-    auto overall_end = high_resolution_clock::now();
-    cout << "Total Execution Time: " << duration<double, milli>(overall_end - overall_start).count() << " ms" << endl;
 }
 
 // **Main Function**
@@ -105,7 +100,11 @@ int main() {
 
     double best_alpha = 0.0, best_rmse = 0.0;
     VectorXd best_beta;
+
+    auto overall_start = high_resolution_clock::now();
     k_fold_cv_multi_thread_async(X, y, best_alpha, best_rmse, best_beta);
+    auto overall_end = high_resolution_clock::now();
+    cout << "Total Execution Time: " << duration<double, milli>(overall_end - overall_start).count() << " ms" << endl;
 
     VectorXd y_pred = X * best_beta;
 
