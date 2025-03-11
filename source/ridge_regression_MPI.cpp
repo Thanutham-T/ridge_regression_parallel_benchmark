@@ -138,12 +138,9 @@ int main(int argc, char **argv) {
 
     // **Only the root process computes final predictions**
     if (world_rank == 0) {
-        MatrixXd X_bias(X.rows(), X.cols() + 1);
-        X_bias << VectorXd::Ones(X.rows()), X;
+        best_beta = ridge_cholesky_eigen(X, y, best_alpha);
 
-        best_beta = ridge_cholesky_eigen(X_bias, y, best_alpha);
-
-        VectorXd y_pred = X_bias * best_beta;
+        VectorXd y_pred = X * best_beta;
 
         // **Calculate R² Score**
         double r2 = r2_score(y, y_pred);
