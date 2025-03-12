@@ -107,3 +107,9 @@ void load_data(const string &filename, MatrixXd &X, VectorXd &y) {
 
     cout << "Loaded " << X.rows() << " samples with " << X.cols() << " features" << endl;
 }
+
+double calculate_gflop(size_t n, size_t d, int k) {
+    double flops_per_fold = (n * d * d) + (n * d) + (d * d * d) + (2 * n);
+    double total_flops = k * flops_per_fold;
+    return total_flops / 1e9;  // Convert to GFLOP
+}

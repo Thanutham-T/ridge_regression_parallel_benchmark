@@ -120,6 +120,8 @@ int main(int argc, char **argv) {
         y.resize(n_samples);
     }
 
+    int k_folds = 5;
+
     // **Broadcast X and y to all processes**
     MPI_Bcast(X.data(), n_samples * n_features, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(y.data(), n_samples, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -131,9 +133,11 @@ int main(int argc, char **argv) {
     // **Start measuring execution time for the whole process**
     auto overall_start = high_resolution_clock::now();
     k_fold_cv_mpi(X, y, best_alpha, best_rmse, best_beta);
+    auto overall_end = high_resolution_clock::now();
+    double execution_time = duration<double>(overall_end - overall_start).count();
+    
     if (world_rank == 0) {
-        auto overall_end = high_resolution_clock::now();
-        cout << "Total Execution Time: " << duration<double, milli>(overall_end - overall_start).count() << " ms" << endl;    
+        cout << "Total Execution Time: " << execution_time << " s" << endl;
     }
 
     // **Only the root process computes final predictions**
@@ -149,6 +153,12 @@ int main(int argc, char **argv) {
         cout << "Best RMSE: " << best_rmse << endl;
         cout << "Best R²: " << r2 << endl;
         cout << "Best Ridge Coefficients (Cholesky):\n" << best_beta.transpose() << endl;
+
+        double gflop = calculate_gflop(n_samples, n_features, k_folds);
+        double gflops = gflop / execution_time;
+    
+        cout << "Total GFLOP: " << gflop << " GFLOP" << endl;
+        cout << "Performance: " << gflops << " GFLOPS" << endl;
     }
 
     MPI_Finalize();

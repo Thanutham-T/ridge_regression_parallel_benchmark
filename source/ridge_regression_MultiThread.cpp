@@ -105,13 +105,18 @@ int main() {
         return 1;
     }
 
+    size_t n_samples = X.rows();
+    size_t n_features = X.cols();
+    int k_folds = 5;
+
     double best_alpha = 0.0, best_rmse = 0.0;
     VectorXd best_beta;
 
     auto overall_start = high_resolution_clock::now();
     k_fold_cv_multi_thread(X, y, best_alpha, best_rmse, best_beta);
     auto overall_end = high_resolution_clock::now();
-    cout << "Total Execution Time: " << duration<double, milli>(overall_end - overall_start).count() << " ms" << endl;
+    double execution_time = duration<double>(overall_end - overall_start).count();
+    cout << "Total Execution Time: " << execution_time << " s" << endl;
 
     VectorXd y_pred = X * best_beta;
 
@@ -122,6 +127,12 @@ int main() {
     cout << "Best RMSE: " << best_rmse << endl;
     cout << "Best R²: " << r2 << endl;
     cout << "Best Ridge Coefficients (Cholesky):\n" << best_beta.transpose() << endl;
+
+    double gflop = calculate_gflop(n_samples, n_features, k_folds);
+    double gflops = gflop / execution_time;
+
+    cout << "Total GFLOP: " << gflop << " GFLOP" << endl;
+    cout << "Performance: " << gflops << " GFLOPS" << endl;
 
     return 0;
 }

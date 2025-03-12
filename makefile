@@ -11,6 +11,7 @@ SOURCE = ./source
 OUTDIR = ./out
 
 # Source files
+SRC_NORM = $(SOURCE)/ridge_regression.cpp
 SRC_MT = $(SOURCE)/ridge_regression_MultiThread.cpp
 SRC_ASYNC = $(SOURCE)/ridge_regression_AsyncThread.cpp
 SRC_OPENMP = $(SOURCE)/ridge_regression_OpenMP.cpp
@@ -18,6 +19,7 @@ SRC_MPI = $(SOURCE)/ridge_regression_MPI.cpp
 SRC_OMPI = $(SOURCE)/ridge_regression_OMPI.cpp
 
 # Output executables
+OUT_NORM = $(OUTDIR)/ridge_regression
 OUT_MT = $(OUTDIR)/ridge_regression_MultiThread
 OUT_ASYNC = $(OUTDIR)/ridge_regression_AsyncThread
 OUT_OPENMP = $(OUTDIR)/ridge_regression_OpenMP
@@ -28,7 +30,10 @@ OUT_OMPI = $(OUTDIR)/ridge_regression_OMPI
 $(shell mkdir -p $(OUTDIR))
 
 # Normal compilation
-compile-all-normal: $(OUT_MT) $(OUT_ASYNC) $(OUT_OPENMP) $(OUT_MPI)
+compile-all-normal: $(OUT_NORM) $(OUT_MT) $(OUT_ASYNC) $(OUT_OPENMP) $(OUT_MPI)
+
+$(OUT_NORM): $(SRC_NORM)
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 $(OUT_MT): $(SRC_MT)
 	$(CXX) $(CXXFLAGS) -pthread $< -o $@
@@ -47,6 +52,7 @@ $(OUT_OMPI): $(SRC_OMPI)
 
 # Optimized compilation (-O3)
 compile-all-optimize: 
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SRC_NORM) -o $(OUT_NORM)
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -pthread $(SRC_MT) -o $(OUT_MT)
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -pthread $(SRC_ASYNC) -o $(OUT_ASYNC)
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -fopenmp $(SRC_OPENMP) -o $(OUT_OPENMP)
@@ -56,6 +62,10 @@ compile-all-optimize:
 OMP_NUM_THREADS?=2
 
 run-all:
+	@echo "Running Normal..."
+	@$(OUTDIR)/ridge_regression
+	@echo "\n"
+
 	@echo "Running MultiThread..."
 	@$(OUTDIR)/ridge_regression_MultiThread
 	@echo "\n"
