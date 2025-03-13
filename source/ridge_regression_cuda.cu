@@ -259,7 +259,7 @@ int main()
 {
     vector<vector<double>> X;
     vector<double> y;
-    int num_samples = 4, num_features = 4;
+    int num_samples = 0, num_features = 0;
     int k_flods = 2;
 
     double best_alpha;
