@@ -114,7 +114,7 @@ void k_fold_cv(const vector<vector<double>> &X, const vector<double> &y, double 
         return;
 
     best_rmse = numeric_limits<double>::infinity();
-    double alpha = 0.02, step_size = 0.01;
+    double alpha = 0.0, step_size = 0.01;
 
     vector<vector<double>> X_bias = add_intercept(X);
     vector<double> h_X = flatten(X_bias);
@@ -140,7 +140,7 @@ void k_fold_cv(const vector<vector<double>> &X, const vector<double> &y, double 
     cudaMemcpy(d_y, h_y.data(), size_y, cudaMemcpyHostToDevice);
 
     double prev_rmse = std::numeric_limits<double>::infinity(); // Track previous RMSE
-    while (alpha <= 0.02)
+    while (true)
     {
         cudaMemset(d_XTX, 0, size_XTX);
         cudaMemset(d_XTy, 0, size_XTy);
@@ -205,13 +205,13 @@ void k_fold_cv(const vector<vector<double>> &X, const vector<double> &y, double 
             // }
             // cout << endl;
 
-            // Print Beta values
-            cout << "\nBeta coefficients:\n";
-            for (double b : beta)
-            {
-                cout << b << " ";
-            }
-            cout << endl;
+            // // Print Beta values
+            // cout << "\nBeta coefficients:\n";
+            // for (double b : beta)
+            // {
+            //     cout << b << " ";
+            // }
+            // cout << endl;
 
             // Compute RMSE
             double fold_rmse = compute_rmse(X, y, beta, fold, k);
