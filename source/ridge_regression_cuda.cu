@@ -149,9 +149,36 @@ void k_fold_cv(const vector<vector<double>> &X, const vector<double> &y, double 
         int numBlocks = k;
         int numThreads = 1024;
 
+        // Create CUDA event variables for timing
+        cudaEvent_t start, stop;
+        float milliseconds = 0;
+
+        // Create events
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+
+        // Record the start time
+        cudaEventRecord(start);
+
         // Launch Ridge Regression Kernel
         ridge_regression<<<numBlocks, numThreads>>>(d_X, d_y, alpha, d_XTX, d_XTy, d_L, n_samples, n_features, k);
         cudaDeviceSynchronize();
+
+        // Record the stop time
+        cudaEventRecord(stop);
+
+        // Wait for the stop event to complete
+        cudaEventSynchronize(stop);
+
+        // Calculate the elapsed time in milliseconds
+        cudaEventElapsedTime(&milliseconds, start, stop);
+
+        // Print the elapsed time
+        cout << "Time taken by Ridge Regression Kernel: " << milliseconds << " ms" << endl;
+
+        // Clean up events
+        cudaEventDestroy(start);
+        cudaEventDestroy(stop);
 
         // Copy results back to host
         cudaMemcpy(h_XTy.data(), d_XTy, size_XTy, cudaMemcpyDeviceToHost);
