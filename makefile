@@ -3,6 +3,8 @@ CXX = g++
 MPICXX = mpic++
 CXXFLAGS = -Wall -std=c++20
 OPTFLAGS = -O3
+NVCC = nvcc
+CUDAOPTFLAGS = -gencode arch=compute_75,code=sm_75
 
 # SOURCE directory
 SOURCE = ./source
@@ -17,6 +19,7 @@ SRC_ASYNC = $(SOURCE)/ridge_regression_AsyncThread.cpp
 SRC_OPENMP = $(SOURCE)/ridge_regression_OpenMP.cpp
 SRC_MPI = $(SOURCE)/ridge_regression_MPI.cpp
 SRC_OMPI = $(SOURCE)/ridge_regression_OMPI.cpp
+SRC_CUDA = $(SOURCE)/ridge_regression_cuda.cu
 
 # Output executables
 OUT_NORM = $(OUTDIR)/ridge_regression
@@ -25,6 +28,7 @@ OUT_ASYNC = $(OUTDIR)/ridge_regression_AsyncThread
 OUT_OPENMP = $(OUTDIR)/ridge_regression_OpenMP
 OUT_MPI = $(OUTDIR)/ridge_regression_MPI
 OUT_OMPI = $(OUTDIR)/ridge_regression_OMPI
+OUT_CUDA = $(OUTDIR)/ridge_regression_cuda
 
 # Create output directory if it doesn't exist
 $(shell mkdir -p $(OUTDIR))
@@ -50,6 +54,9 @@ $(OUT_MPI): $(SRC_MPI)
 $(OUT_OMPI): $(SRC_OMPI)
 	$(MPICXX) $(CXXFLAGS) -fopenmp $< -o $@
 
+$(OUT_CUDA): $(SRC_CUDA)
+	$(NVCC) $< -o $@
+
 # Optimized compilation (-O3)
 compile-all-optimize: 
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SRC_NORM) -o $(OUT_NORM)
@@ -58,6 +65,7 @@ compile-all-optimize:
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) -fopenmp $(SRC_OPENMP) -o $(OUT_OPENMP)
 	$(MPICXX) $(CXXFLAGS) $(OPTFLAGS) $(SRC_MPI) -o $(OUT_MPI)
 	$(MPICXX) $(CXXFLAGS) $(OPTFLAGS) -fopenmp $(SRC_OMPI) -o $(OUT_OMPI)
+	$(NVCC)  $(OPTFLAGS) $(CUDAOPTFLAGS) $(SRC_CUDA) -o $(OUT_CUDA)
 
 OMP_NUM_THREADS?=2
 
@@ -85,6 +93,10 @@ run-all:
 	@echo "Running MPI & OpenMP..."
 	@export OMP_NUM_THREADS=$(OMP_NUM_THREADS)
 	@mpirun -np 3 $(OUTDIR)/ridge_regression_OMPI
+	@echo "\n"
+
+	@echo "Running CUDA..."
+	@$(OUTDIR)/ridge_regression_cuda
 	@echo "\n"
 
 # Clean build files
