@@ -220,3 +220,9 @@ double compute_r2_score(const vector<vector<double>> &X, const vector<double> &y
     // Compute R² score: 1 - (ss_residual / ss_total)
     return 1.0 - (ss_residual / ss_total);
 }
+
+double calculate_gflop(size_t n, size_t d, int k) {
+    double flops_per_fold = (n * d * d) + (n * d) + (d * d * d) + (2 * n);
+    double total_flops = k * flops_per_fold;
+    return total_flops / 1e9;  // Convert to GFLOP
+}

@@ -295,5 +295,11 @@ int main()
     }
     cout << endl;
 
+    double gflop = calculate_gflop(num_samples, num_features, k_flods);
+    double gflops = gflop / execution_time;
+
+    cout << "Total GFLOP: " << gflop << " GFLOP" << endl;
+    cout << "Performance: " << gflops << " GFLOPS" << endl;
+
     return 0;
 }
