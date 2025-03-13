@@ -21,6 +21,8 @@ void k_fold_cv_ompi(const MatrixXd &X, const VectorXd &y, double &best_alpha, do
 
         #pragma omp parallel for reduction(+:local_rmse, local_fold_count)
         for (int fold_idx = world_rank; fold_idx < k; fold_idx += world_size) {
+            // auto fold_start = chrono::high_resolution_clock::now();
+
             size_t fold_size = n_samples / k;
             size_t val_start = fold_idx * fold_size;
             size_t val_end = min((fold_idx + 1) * fold_size, n_samples);
@@ -57,6 +59,13 @@ void k_fold_cv_ompi(const MatrixXd &X, const VectorXd &y, double &best_alpha, do
 
             local_rmse += fold_error;
             local_fold_count++;
+
+            // auto fold_end = high_resolution_clock::now();
+            // double fold_time = duration<double, milli>(fold_end - fold_start).count();
+            // int thread_num = omp_get_thread_num(); // Get the OpenMP thread number
+            // cout << "Process " << world_rank << " | thread " << thread_num 
+            //      << " | Fold " << fold_idx + 1 
+            //      << " | Execution Time: " << fold_time << " ms" << endl;        
         }
 
         // **Aggregate RMSE results across all processes**
