@@ -11,8 +11,6 @@ This project explores parallel techniques for training ridge regression models a
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Benchmarking](#benchmarking)
-- [References](#references)
-- [License](#license)
 
 ## Introduction
 
